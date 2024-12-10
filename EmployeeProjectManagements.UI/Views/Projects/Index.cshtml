@@ -1,0 +1,447 @@
+﻿<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.1/dist/sweetalert2.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.1/dist/sweetalert2.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+</head>
+<body>
+<div class="containers">
+	<button type="button" id="addProject" class="btn btn-primary">
+		<i class="fas fa-plus"></i> Add Project
+	</button>
+</div>
+
+<br/>
+<br/>
+	<table id="projectsTable" class="table table-striped">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Start Date</th>
+				<th>End Date</th>
+				<th>Status</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+	</table>
+	<div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="projectModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="projectModalLabel">Add Project</h5>
+				@* 	<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button> *@
+				</div>
+				<div class="modal-body">
+					<form id="projectForm">
+						<div class="form-group">
+							<label for="projectaName">Name</label>
+							<input type="text" class="form-control" id="projectaName" name="Name" placeholder="Enter name" required>
+						</div>
+						<div class="form-group">
+							<label for="startDate">Start Date</label>
+							<input type="date" class="form-control" id="startDate" name="startDate">
+						</div>
+						<div class="form-group">
+							<label for="endDate">End Date</label>
+							<input type="date" class="form-control" id="endDate" name="EndDate">
+						</div>
+						<div class="form-group">
+							<label for="status">Status</label>
+							<input type="text" class="form-control" id="status" name="status" placeholder="Enter Status">
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="saveProject">Save Employee</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="asingedprojectModal" tabindex="-1" role="dialog" aria-labelledby="asingedprojectModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="asingedprojectModal">Assign Employee to Project</h5>
+				</div>
+				<div class="modal-body">
+					<form id="projectForm">
+						<div class="form-group">
+							<select class="form-control" id="empName" name="Name" required>
+								<option value="" disabled selected>Select a Employee</option>
+							</select>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="saveAsignedEMPTOProject">Save</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="modal fade" id="assignedEmployeeModal" tabindex="-1" aria-labelledby="assignedEmployeeModalModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="assignedEmployeeModalLabel">Assigned Employees</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<ul id="employeeList">
+			
+					</ul>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		$('#projectsTable').DataTable({
+			processing: true,
+			serverSide: true,
+			ajax: {
+				url: '/Projects/GetProjects',
+				type: 'POST',
+				dataType: 'json',
+				data: function (d) {
+
+					return {
+						draw: d.draw,
+						start: d.start,
+						length: d.length,
+						search: d.search.value
+						// orderBy: d.columns[d.order[0].column].data,
+						// ascending: d.order[0].dir === 'asc'
+					};
+				},
+				dataSrc: function (json) {
+
+					return json.data;
+				}
+			},
+			columns: [
+				{ data: 'projectName', className: 'editables', defaultContent: '', render: (data) => `<span data-column="projectName">${data}</span>` },
+				{ data: 'startDate', className: 'editables', defaultContent: '', render: (data) => `<span data-column="startDate">${data}</span>` },
+				{ data: 'endDate', className: 'editables', defaultContent: '', render: (data) => `<span data-column="endDate">${data}</span>` },
+				{ data: 'status', className: 'editables', defaultContent: '', render: (data) => `<span data-column="status">${data}</span>` },
+				{
+					data: 'id',
+					render: function (data, type, row) {
+						return `
+									<a href="javascript:void(0);" class="btn btn-sm btn-primary" id="edit-btn-${data}" onclick="editProject(${data})">Edit</a>
+									<a href="javascript:void(0);" class="btn btn-sm btn-danger" onclick="deleteProject(${data})">Delete</a>
+													<a href="javascript:void(0);" class="btn btn-sm btn-success" onclick="AssignedProject(${data})">Assigned Employee</a>
+															<a href="javascript:void(0);" class="btn btn-sm btn-success" onclick="GetEmployeeAssignedProject(${data})">Get Employee Assigned Project</a>
+								`;
+					},
+					orderable: false
+				}
+			],
+			rowCallback: function (row, data) {
+				$(row).attr('data-ids', data.id);
+			},
+			paging: true,
+			searching: true,
+			ordering: true,
+			pageLength: 10,
+			language: {
+				processing: "Processing...",
+				lengthMenu: "Show _MENU_ entries",
+				search: "Search:",
+				info: "Showing _START_ to _END_ of _TOTAL_ entries",
+				infoEmpty: "No entries to show",
+				infoFiltered: "(filtered from _MAX_ total entries)"
+			}
+		});
+		$('#projectsTable tbody').on('mouseenter', 'td.editables', function () {
+			const cell = $(this);
+			if (!cell.hasClass('editables')) {
+				cell.addClass('editables');
+			}
+		});
+
+		//---------------------------------------------------------------------------
+		$('#addProject').on('click', function () {
+			// Show the modal
+			$('#projectModal').modal('show');
+
+			// Initialize the date picker on `#startDate`
+			$('#startDate').datepicker({
+				format: 'dd/mm/yyyy', // Format the date as desired
+				autoclose: true,      // Close the picker automatically
+				todayHighlight: true // Highlight today's date
+			});
+		});
+		//----------------------------------------------------------------------------
+		function deleteProject(projectId) {
+			Swal.fire({
+				title: 'Are you sure?',
+				text: "You won't be able to revert this!",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#d33',
+				cancelButtonColor: '#3085d6',
+				confirmButtonText: 'Yes, delete it!'
+			}).then(async (result) => {
+				if (result.isConfirmed) {
+					try {
+						const response = await fetch(`/Projects/DeleteProject?id=${projectId}`, {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							}
+						});
+
+						if (response.ok) {
+							Swal.fire(
+								'Deleted!',
+								'The project has been deleted.',
+								'success'
+							).then(() => {
+								location.reload(true);
+							});
+						} else {
+							Swal.fire(
+								'Error!',
+								'There was an issue deleting the project.',
+								'error'
+							).then(() => {
+								location.reload(true);
+							});
+						}
+					} catch (error) {
+						Swal.fire(
+							'Error!',
+							'There was an issue connecting to the server.',
+							'error'
+						);
+					}
+				}
+			});
+		}
+		// ------------------------------------------------------------  Func Edit Employee
+		function editProject(rowId) {
+		
+			const row = $(`#projectsTable tbody tr[data-ids="${rowId}"]`);
+			row.find('.editables').each(function () {
+				const cell = $(this);
+				const currentValue = cell.text();
+				const columnName = cell.find('span').data('column');
+
+				if (columnName != 'startDate' && columnName != 'endDate') {
+					cell.html(`<input type="text" class="form-control" data-column="${columnName}" value="${currentValue}" />`);
+				}
+				else{
+					const formattedValue = new Date(currentValue).toISOString().split('T')[0];
+
+					cell.html(`<input type="date" class="form-control" data-column="${columnName}" value="${formattedValue}" />`);
+				}
+			});
+
+			const editButton = $(`#edit-btn-${rowId}`);
+			editButton.replaceWith(`<a href="javascript:void(0);" class="btn btn-sm btn-success" id="confirm-btn-${rowId}" onclick="confirmEdits(${rowId})">Confirm</a>`);
+		}
+
+
+		function confirmEdits(rowId) {
+			const row = $(`#projectsTable tbody tr[data-ids="${rowId}"]`);
+			const updatedData = {};
+
+			row.find('.editables').each(function () {
+				const cell = $(this);
+				const input = cell.find('input');
+				if (input.length) {
+					const newValue = input.val();
+					const columnName = input.data('column');
+					if (columnName) {
+						updatedData[columnName] = newValue;
+					}
+					cell.html(newValue);
+				}
+			});
+
+			const confirmButton = $(`#confirm-btn-${rowId}`);
+			confirmButton.replaceWith(
+				`<a href="javascript:void(0);" class="btn btn-sm btn-primary" id="edit-btn-${rowId}" onclick="editEmployee(${rowId})">Edit</a>`
+			);
+
+
+			$.ajax({
+				url: '/Projects/AddOrEditProject',
+				method: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify({
+					id: rowId,
+					projectName: updatedData.projectName,
+					startDate: updatedData.startDate,
+					endDate: updatedData.endDate,
+					status: updatedData.status
+				}),
+				success: function (response) {
+					Swal.fire('Success!', 'project data has been updated.', 'success');
+				},
+				error: function () {
+					Swal.fire('Error!', 'There was an issue updating the project data.', 'error');
+				}
+			});
+		}
+		//---------------------------------------------------- Partial <meta name="viewport" content="width=device-width" />
+		$(document).ready(function () {
+
+			$('#addEmployee').on('click', function () {
+				$('#employeeModal').modal('show');
+			});
+
+
+			$('#saveProject').on('click', function () {
+	
+				var projectData = {
+					ProjectName: $('#projectaName').val(),
+					startDate: $('#startDate').val(),
+					endDate: $('#endDate').val(),
+					status: $('#status').val()
+				};
+				if (projectData.startDate) {
+					const parsedStartDate = new Date(projectData.startDate);
+					projectData.startDate = parsedStartDate.toISOString().split('T')[0];
+				}
+				if (projectData.endDate) {
+					const parsedEndDate = new Date(projectData.endDate);
+					projectData.endDate = parsedEndDate.toISOString().split('T')[0];
+				}
+
+
+				if (!projectData.ProjectName) {
+					Swal.fire('Error!', 'Name is required!', 'error');
+					return;
+				}
+				if (!projectData.startDate) {
+					Swal.fire('Error!', 'startDate is required!', 'error');
+					return;
+				}
+				if (!projectData.endDate) {
+					Swal.fire('Error!', 'endDate is required!', 'error');
+					return;
+				}
+				if (!projectData.status) {
+					Swal.fire('Error!', 'status is required!', 'error');
+					return;
+				}
+				$.ajax({
+					url: '/Projects/AddOrEditProject',
+					method: 'POST',
+					contentType: 'application/json',
+					data: JSON.stringify(projectData),
+					success: function (response) {
+						$('#projectModal').modal('hide');
+						Swal.fire('Success!', 'Employee has been added.', 'success').then(() => {
+							location.reload(true);
+						});
+
+
+					},
+					error: function () {
+						Swal.fire('Error!', 'There was an issue adding the project.', 'error');
+					}
+				});
+			});
+		});
+
+		$(document).ready(function () {
+
+			$('.btn-secondary').on('click', function () {
+				$('#projectModal').modal('hide');
+			});
+		});
+
+		$(document).ready(function () {
+
+			$('.btn-secondary').on('click', function () {
+				$('#asingedprojectModal').modal('hide');
+			});
+		});
+		function AssignedProject(data) {
+			$('#asingedprojectModal').modal('show');
+
+			$('#empName').html('<option value="" disabled selected>Select an employee</option>');
+
+	
+			$.ajax({
+				url: '/Employees/GetListEmployee',
+				method: 'GET',
+				success: function (response) {
+					response.forEach(employee => {
+						$('#empName').append(`<option value="${employee.id}">${employee.name}</option>`);
+					});
+					$('#saveAsignedEMPTOProject').data('idProject', data);
+
+				},
+				error: function () {
+					Swal.fire('Error!', 'Failed to load employee list.', 'error');
+				}
+			});
+		}
+		$('#saveAsignedEMPTOProject').click(function () {
+		
+			const idProject = $(this).data('idProject');
+			const employeeId = $('#empName').val();
+
+			if (!employeeId) {
+				Swal.fire('Error!', 'Please select an employee.', 'error');
+				return;
+			}
+
+			$.ajax({
+				url: `/Projects/AssignEmployeeToProject?projectId=${idProject}&employeeId=${employeeId}`,
+				method: 'POST',
+				contentType: 'application/json',
+				success: function () {
+					Swal.fire('Success!', 'Employee assigned successfully.', 'success');
+					$('#asingedprojectModal').modal('hide');
+				},
+				error: function () {
+					Swal.fire('Error!', 'Failed to assign employee.', 'error');
+				}
+			});
+		});
+		function GetEmployeeAssignedProject(projectId) {
+			console.log(projectId);
+			$('#assignedEmployeeModal').modal('show');
+
+			$('#employeeList').empty();
+			debugger;
+			$.ajax({
+				url: `/Employees/GetAssignedEmployees?projectId=${projectId}`,
+				method: 'POST',
+				success: function (response) {
+					console.log(response); 
+
+					response.forEach(employee => {
+
+						$('#employeeList').append(`<li>${employee.name}</li>`);
+					});
+				},
+				error: function () {
+					Swal.fire('Error!', 'Failed to load employee list.', 'error');
+				}
+			});
+		}
+
+	</script>
+</body>
+</html>
