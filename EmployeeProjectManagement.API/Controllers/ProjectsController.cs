@@ -125,9 +125,21 @@ namespace EmployeeProjectManagement.API.Controllers
 		{
 			try
 			{
-				var projects = _context.EmployeeProjects.Where(x => x.Project != null).Select(x => x.Project.ProjectName).Distinct().ToList();
-				return new JsonResult(projects);
-			}
+                var projects = await _context.EmployeeProjects
+              .Where(x => x.Project != null)
+              .Include(x => x.Project)
+              .Include(x => x.Employee)
+              .Select(x => new
+              {
+                  ProjectId = x.Project.Id,
+                  ProjectName = x.Project.ProjectName,
+                  EmployeeId = x.Employee.Id,
+                  EmployeeName = x.Employee.Name
+              })
+              .ToListAsync();
+
+                return Ok(projects);
+            }
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex.ToString());
