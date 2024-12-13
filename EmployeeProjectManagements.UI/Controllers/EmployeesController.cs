@@ -108,7 +108,10 @@ namespace EmployeeProjectManagements.UI.Controllers
 		{
 			try
 			{
-			
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
 				var employeeJson = JsonConvert.SerializeObject(employee);
 				var content = new StringContent(employeeJson, Encoding.UTF8, "application/json");
 				string token = HttpContext.Session.GetString("AuthToken");

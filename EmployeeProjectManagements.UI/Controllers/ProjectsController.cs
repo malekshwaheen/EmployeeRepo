@@ -89,7 +89,14 @@ namespace EmployeeProjectManagements.UI.Controllers
 		{
 			try
 			{
-
+				if (!ModelState.IsValid)
+				{
+					var errors = ModelState.Values
+			  .SelectMany(v => v.Errors)
+			  .Select(e => e.ErrorMessage)
+			  .ToList();
+					return BadRequest(new { success = false, errors });
+				}
 				var employeeJson = JsonConvert.SerializeObject(project);
 				var content = new StringContent(employeeJson, Encoding.UTF8, "application/json");
 				string token = HttpContext.Session.GetString("AuthToken");
@@ -102,7 +109,7 @@ namespace EmployeeProjectManagements.UI.Controllers
 					return View("Error", new { message = "There was an issue AddOrEditProject." });
 				}
 
-				TempData["SuccessMessage"] = "Project deleted successfully.";
+				TempData["SuccessMessage"] = "Project Added successfully.";
 				return RedirectToAction("Index");
 			}
 			catch (Exception ex)
@@ -113,7 +120,7 @@ namespace EmployeeProjectManagements.UI.Controllers
 		}
 		[HttpPost]
 
-		public async Task<IActionResult> AssignEmployeeToProject(int projectId,int employeeId)
+		public async Task<IActionResult> AssignEmployeeToProject(int projectId, int employeeId)
 		{
 			try
 			{
