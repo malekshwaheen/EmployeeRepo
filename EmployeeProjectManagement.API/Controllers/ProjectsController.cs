@@ -48,7 +48,7 @@ namespace EmployeeProjectManagement.API.Controllers
 			if (totalRecords < start + length)
 			{
 				start = 0;
-				employees = await query.Skip(start).Take(totalRecords - start).ToListAsync();  // Adjust the 'take' based on the available records
+				employees = await query.Skip(start).Take(totalRecords - start).ToListAsync(); 
 			}
 
 			var result = new
